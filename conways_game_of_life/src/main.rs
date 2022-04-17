@@ -1,4 +1,11 @@
 // i think this is for display/UI right? i did not need it for backend
+
+use winit::{
+    event::{Event, WindowEvent},
+    event_loop::{ControlFlow, EventLoop},
+    window::WindowBuilder,
+};
+
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Cell {
     pub alive: bool,
@@ -174,4 +181,23 @@ fn main() {
     b_test.print();
     b_test.evolve(); // 3
     b_test.print(); // (same as 2 because it is a stagnant square pattern)
+    let event_loop = EventLoop::new();
+    let window = WindowBuilder::new()
+                .with_title("KAL Seagull")
+                .build(&event_loop).unwrap();
+
+    
+
+
+    event_loop.run(move |event, _, control_flow| {
+        *control_flow = ControlFlow::Wait;
+
+        match event {
+            Event::WindowEvent {
+                event: WindowEvent::CloseRequested,
+                window_id,
+            } if window_id == window.id() => *control_flow = ControlFlow::Exit,
+            _ => (),
+        }
+    });
 }
