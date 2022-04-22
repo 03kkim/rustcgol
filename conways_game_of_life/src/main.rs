@@ -2,10 +2,66 @@
 
 use winit::{
     dpi::LogicalSize,
+<<<<<<< HEAD
     event::{Event, WindowEvent, VirtualKeyCode},
+=======
+    event::{Event, VirtualKeyCode, WindowEvent},
+>>>>>>> bruh
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
 };
+use winit_input_helper::WinitInputHelper;
+
+use pixels::{Error, Pixels, SurfaceTexture};
+
+const WIDTH: usize = 10;
+const HEIGHT: usize = 10;
+
+
+fn main() {
+    let event_loop = EventLoop::new();
+    let mut input = WinitInputHelper::new();
+    let window = WindowBuilder::new()
+                .with_title("KAL Seagull")
+                .build(&event_loop).unwrap();
+
+    let mut pixels = {
+        let window_size = window.inner_size();
+        let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
+        Pixels::new(WIDTH as u32, HEIGHT as u32, surface_texture)
+    };
+    
+    let mut life = GameBoard::new(HEIGHT, WIDTH);
+    // life.print(); // display empty board
+    life.set_cell(true, 5, 5);
+    life.set_cell(true, 6, 5);
+    life.set_cell(true, 6, 6);
+    life.set_cell(true, 7, 7);
+    life.set_cell(true, 8, 8);
+    life.print(); // display starting board
+
+    // // let it evolve a bit
+    // life.evolve(); // 1
+    // life.print();
+    // life.evolve(); // 2
+    // life.print();
+    // life.evolve(); // 3
+    // life.print(); // (same as 2 because it is a stagnant square pattern)
+
+
+    event_loop.run(move |event, _, control_flow| {
+        *control_flow = ControlFlow::Wait;
+
+
+        match event {
+            Event::WindowEvent {
+                event: WindowEvent::CloseRequested,
+                window_id,
+            } if window_id == window.id() => *control_flow = ControlFlow::Exit,
+            _ => (),
+        }
+    });
+}
 
 use winit_input_helper::WinitInputHelper;
 
@@ -198,6 +254,7 @@ impl GameBoard {
         }
     }
 }
+<<<<<<< HEAD
 
 fn main() -> Result<(), Error> {
     let mut b_test = GameBoard::new(10,20);
@@ -289,3 +346,5 @@ fn main() -> Result<(), Error> {
         */
     });
 }
+=======
+>>>>>>> bruh
