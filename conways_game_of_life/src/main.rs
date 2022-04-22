@@ -21,7 +21,7 @@ pub struct Cell {
     pub alive: bool,
     pub row: usize,
     pub col: usize
-}
+} // actually this class is not necessary?
 
 #[derive(Debug, Default)]
 pub struct GameBoard {
@@ -182,7 +182,6 @@ impl GameBoard {
         debug_assert_eq!(frame.len(), 4 * self.width * self.height);
         let mut count: usize = 0;
         for cell in frame.chunks_exact_mut(4) {
-            // not sure yet about the order that pixel loops through frame
             let col: usize = count % (PIX_WIDTH as usize);
             let row: usize = count / (PIX_WIDTH as usize);
 
@@ -196,13 +195,6 @@ impl GameBoard {
 
             cell.copy_from_slice(&color);
             count += 1;
-            /*if count % 3 == 0 {
-                *pixel = 127;
-            } else {
-                *pixel = 0;
-            }*/
-            
-            // println!("{:?}", count);
         }
     }
 }
@@ -233,12 +225,15 @@ fn main() -> Result<(), Error> {
                 .with_min_inner_size(LogicalSize::new(WIN_WIDTH, WIN_HEIGHT))
                 .build(&event_loop).unwrap();
     
+    // display GameBoard with pixels            
     let mut pixels = {
         let window_size = window.inner_size();
         let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
         Pixels::new(PIX_WIDTH, PIX_HEIGHT, surface_texture)?
     };
 
+    // before displaying the color of the window should be white 
+    // although it's never white because the program displays the gameboard instantly
     pixels.set_clear_color(Color::WHITE);
 
     let mut game_board = GameBoard::new(PIX_HEIGHT as usize, PIX_WIDTH as usize);
@@ -246,6 +241,10 @@ fn main() -> Result<(), Error> {
     game_board.set_cell(true, 10, 11);
     game_board.set_cell(true, 10, 12);
     game_board.set_cell(true, 10, 13);
+    game_board.set_cell(true, 10, 10);
+    game_board.set_cell(true, 11, 11);
+    game_board.set_cell(true, 12, 12);
+    game_board.set_cell(true, 13, 13);
 
     let mut paused = false;
 
@@ -264,6 +263,7 @@ fn main() -> Result<(), Error> {
             _ => (),
         }
 
+        // if keys are pressed
         if win_input.update(&event) {
             // Close the window
             if win_input.key_pressed(VirtualKeyCode::Escape) || win_input.quit() {
@@ -275,5 +275,17 @@ fn main() -> Result<(), Error> {
                 paused = !paused;
             }
         }
+
+        game_board.evolve();
+        /*
+            we still need:
+            allow user to add evolution seed in the window with mouse
+            dealing with different states: paused & not paused
+                - if not paused, don't detect mouse clicks
+                - if it is paused, allow player to add seeds
+            - make the board evolve itself regularly
+            - make sure between each evolution there is a period of stopping at that state
+                - so that player can see the current state 
+        */
     });
 }
