@@ -1,9 +1,19 @@
 // i think this is for display/UI right? i did not need it for backend
 
 use winit::{
-    event::{Event, WindowEvent},
+    dpi::LogicalSize,
+    event::{Event, WindowEvent, VirtualKeyCode},
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
+};
+
+use winit_input_helper::WinitInputHelper;
+
+use pixels::{
+    Error, 
+    Pixels, 
+    SurfaceTexture,
+    wgpu::Color,
 };
 
 #[derive(Debug, Default, Clone, PartialEq)]
@@ -21,6 +31,11 @@ pub struct GameBoard {
     // board[i][j] - i is the row number, j is the column number
     // do we need to make board Vec<Vec<Cell>>?
 }
+
+const WIN_WIDTH: f64 = 900.0;
+const WIN_HEIGHT: f64 = 600.0;
+const PIX_WIDTH: u32 = 150;
+const PIX_HEIGHT: u32 = 100;
 
 // Do we want to wrap the return values with Enums? (for "safe Rust")
 impl GameBoard {
@@ -162,9 +177,37 @@ impl GameBoard {
             self.set_cell(true, row, col); // set to live
         }
     }
+
+    fn draw(&self, frame: &mut [u8]) {
+        debug_assert_eq!(frame.len(), 4 * self.width * self.height);
+        let mut count: usize = 0;
+        for cell in frame.chunks_exact_mut(4) {
+            // not sure yet about the order that pixel loops through frame
+            let col: usize = count % (PIX_WIDTH as usize);
+            let row: usize = count / (PIX_WIDTH as usize);
+
+            let color = if self.board[row][col] {
+                // light blue if alive
+                [0, 0xff, 0xff, 0xff]
+            } else {
+                // black if not alive
+                [0, 0, 0, 0xff]
+            };
+
+            cell.copy_from_slice(&color);
+            count += 1;
+            /*if count % 3 == 0 {
+                *pixel = 127;
+            } else {
+                *pixel = 0;
+            }*/
+            
+            // println!("{:?}", count);
+        }
+    }
 }
 
-fn main() {
+fn main() -> Result<(), Error> {
     let mut b_test = GameBoard::new(10,20);
     b_test.print(); // display empty board
     b_test.set_cell(true, 5, 5);
@@ -181,13 +224,30 @@ fn main() {
     b_test.print();
     b_test.evolve(); // 3
     b_test.print(); // (same as 2 because it is a stagnant square pattern)
+    
     let event_loop = EventLoop::new();
+    let mut win_input = WinitInputHelper::new();
     let window = WindowBuilder::new()
                 .with_title("KAL Seagull")
+                .with_inner_size(LogicalSize::new(WIN_WIDTH, WIN_HEIGHT))
+                .with_min_inner_size(LogicalSize::new(WIN_WIDTH, WIN_HEIGHT))
                 .build(&event_loop).unwrap();
-
     
+    let mut pixels = {
+        let window_size = window.inner_size();
+        let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
+        Pixels::new(PIX_WIDTH, PIX_HEIGHT, surface_texture)?
+    };
 
+    pixels.set_clear_color(Color::WHITE);
+
+    let mut game_board = GameBoard::new(PIX_HEIGHT as usize, PIX_WIDTH as usize);
+    game_board.set_cell(true, 10, 10);
+    game_board.set_cell(true, 10, 11);
+    game_board.set_cell(true, 10, 12);
+    game_board.set_cell(true, 10, 13);
+
+    let mut paused = false;
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -197,7 +257,23 @@ fn main() {
                 event: WindowEvent::CloseRequested,
                 window_id,
             } if window_id == window.id() => *control_flow = ControlFlow::Exit,
+            Event::RedrawRequested(_) => {
+                game_board.draw(pixels.get_frame());
+                pixels.render();
+            },
             _ => (),
+        }
+
+        if win_input.update(&event) {
+            // Close the window
+            if win_input.key_pressed(VirtualKeyCode::Escape) || win_input.quit() {
+                *control_flow = ControlFlow::Exit;
+                return;
+            }
+            if win_input.key_pressed(VirtualKeyCode::Space) {
+                // use the space key to change the state of paused or not paused
+                paused = !paused;
+            }
         }
     });
 }
