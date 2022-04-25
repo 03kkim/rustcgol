@@ -2,17 +2,13 @@
 
 use winit::{
     dpi::LogicalSize,
-<<<<<<< HEAD
     event::{Event, WindowEvent, VirtualKeyCode},
-=======
-    event::{Event, VirtualKeyCode, WindowEvent},
->>>>>>> bruh
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
 };
 use winit_input_helper::WinitInputHelper;
 
-use pixels::{Error, Pixels, SurfaceTexture};
+/*use pixels::{Error, Pixels, SurfaceTexture};
 
 const WIDTH: usize = 10;
 const HEIGHT: usize = 10;
@@ -61,9 +57,9 @@ fn main() {
             _ => (),
         }
     });
-}
+} 
 
-use winit_input_helper::WinitInputHelper;
+use winit_input_helper::WinitInputHelper;*/
 
 use pixels::{
     Error, 
@@ -254,9 +250,8 @@ impl GameBoard {
         }
     }
 }
-<<<<<<< HEAD
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), pixels::Error> {
     let mut b_test = GameBoard::new(10,20);
     b_test.print(); // display empty board
     b_test.set_cell(true, 5, 5);
@@ -346,5 +341,3 @@ fn main() -> Result<(), Error> {
         */
     });
 }
-=======
->>>>>>> bruh
