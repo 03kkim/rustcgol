@@ -326,9 +326,14 @@ fn main() -> Result<(), pixels::Error> {
                 // use the space key to change the state of paused or not paused
                 paused = !paused;
             }
+            if win_input.key_pressed(VirtualKeyCode::E) {
+                game_board.evolve();
+                game_board.draw(pixels.get_frame());
+                pixels.render();
+            }
         }
 
-        game_board.evolve();
+        
         /*
             we still need:
             allow user to add evolution seed in the window with mouse
