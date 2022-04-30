@@ -12,15 +12,15 @@ CFLAGS = None
 CRATE_CC_NO_DEFAULTS = None
 DEBUG = Some("true")
 CARGO_CFG_TARGET_FEATURE = None
-running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-fPIC" "-g" "-fno-omit-frame-pointer" "-arch" "arm64" "-Wall" "-Wextra" "-o" "/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out/extern/exception.o" "-c" "extern/exception.m"
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-fPIC" "-g" "-fno-omit-frame-pointer" "-arch" "arm64" "-Wall" "-Wextra" "-o" "/Users/abenalaast/CS128/cs128env/src/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out/extern/exception.o" "-c" "extern/exception.m"
 exit status: 0
 AR_aarch64-apple-darwin = None
 AR_aarch64_apple_darwin = None
 HOST_AR = None
 AR = None
-running: "ar" "cq" "/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out/libexception.a" "/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out/extern/exception.o"
+running: "ar" "cq" "/Users/abenalaast/CS128/cs128env/src/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out/libexception.a" "/Users/abenalaast/CS128/cs128env/src/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out/extern/exception.o"
 exit status: 0
-running: "ar" "s" "/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out/libexception.a"
+running: "ar" "s" "/Users/abenalaast/CS128/cs128env/src/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out/libexception.a"
 exit status: 0
 cargo:rustc-link-lib=static=exception
-cargo:rustc-link-search=native=/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out
+cargo:rustc-link-search=native=/Users/abenalaast/CS128/cs128env/src/rustseagull/conways_game_of_life/target/debug/build/objc_exception-c55748485462f95e/out

@@ -1,5 +1,3 @@
-// i think this is for display/UI right? i did not need it for backend
-
 use winit::{
     dpi::LogicalSize,
     event::{Event, WindowEvent, VirtualKeyCode},
@@ -7,6 +5,7 @@ use winit::{
     window::WindowBuilder,
 };
 use winit_input_helper::WinitInputHelper;
+use std::{thread, time};
 
 /*use pixels::{Error, Pixels, SurfaceTexture};
 
@@ -62,7 +61,7 @@ fn main() {
 use winit_input_helper::WinitInputHelper;*/
 
 use pixels::{
-    Error, 
+    // Error, // removed Error because it was unused and caused warning
     Pixels, 
     SurfaceTexture,
     wgpu::Color,
@@ -145,11 +144,13 @@ impl GameBoard {
     }
 
     // sets the board element at (row, col) to the alive parameter (true/false)
-    pub fn set_cell(&mut self, alive: bool, row: usize, col: usize) {
+    pub fn set_cell(&mut self, alive: bool, row: usize, col: usize) -> bool {
         if row >= self.height || col >= self.width {
             panic!("invalid board position!");
         }
         self.board[row][col] = alive;
+
+        alive
     }
 
     // evolves the elements of the board
@@ -241,12 +242,40 @@ impl GameBoard {
                 // light blue if alive
                 [0, 0xff, 0xff, 0xff]
             } else {
+                
                 // black if not alive
                 [0, 0, 0, 0xff]
             };
 
             cell.copy_from_slice(&color);
             count += 1;
+        }
+    }
+
+    fn set_line(&mut self, x0: isize, y0: isize, x1: isize, y1: isize, alive: bool) {
+        // probably should do sutherland-hodgeman if this were more serious.
+        // instead just clamp the start pos, and draw until moving towards the
+        // end pos takes us out of bounds.
+        let x0 = x0.max(0).min(self.width as isize);
+        let y0 = y0.max(0).min(self.height as isize);
+        for (x, y) in line_drawing::Bresenham::new((x0, y0), (x1, y1)) {
+            if let Some(i) = self.grid_idx(x, y) {
+                self.set_cell(alive, y as usize, x as usize);
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn grid_idx<I: std::convert::TryInto<usize>>(&self, x: I, y: I) -> Option<usize> {
+        if let (Ok(x), Ok(y)) = (x.try_into(), y.try_into()) {
+            if x < self.width && y < self.height {
+                Some(x + y * self.width)
+            } else {
+                None
+            }
+        } else {
+            None
         }
     }
 }
@@ -299,6 +328,7 @@ fn main() -> Result<(), pixels::Error> {
     game_board.set_cell(true, 13, 13);
 
     let mut paused = false;
+    let mut draw_state: Option<bool> = None;
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -331,6 +361,66 @@ fn main() -> Result<(), pixels::Error> {
                 game_board.draw(pixels.get_frame());
                 pixels.render();
             }
+
+            // Altered from pixels example 
+            // win_input was input, game_board was life
+            // Handle mouse. This is a bit involved since support some simple
+            // line drawing (mostly because it makes nice looking patterns).
+            let (mouse_cell, mouse_prev_cell) = win_input
+                .mouse()
+                .map(|(mx, my)| {
+                    let (dx, dy) = win_input.mouse_diff();
+                    let prev_x = mx - dx;
+                    let prev_y = my - dy;
+
+                    let (mx_i, my_i) = pixels
+                        .window_pos_to_pixel((mx, my))
+                        .unwrap_or_else(|pos| pixels.clamp_pixel_pos(pos));
+
+                    let (px_i, py_i) = pixels
+                        .window_pos_to_pixel((prev_x, prev_y))
+                        .unwrap_or_else(|pos| pixels.clamp_pixel_pos(pos));
+
+                    (
+                        (mx_i as isize, my_i as isize),
+                        (px_i as isize, py_i as isize),
+                    )
+                })
+                .unwrap_or_default();
+
+            if win_input.mouse_pressed(0) {
+                // debug!("Mouse click at {:?}", mouse_cell);
+                draw_state = Some(game_board.set_cell(true, mouse_cell.0.try_into().unwrap(), mouse_cell.1.try_into().unwrap()));
+                game_board.evolve();
+                game_board.draw(pixels.get_frame());
+                pixels.render();
+            } else if let Some(draw_alive) = draw_state {
+                let release = win_input.mouse_released(0);
+                let held = win_input.mouse_held(0);
+                // debug!("Draw at {:?} => {:?}", mouse_prev_cell, mouse_cell);
+                // debug!("Mouse held {:?}, release {:?}", held, release);
+                // If they either released (finishing the drawing) or are still
+                // in the middle of drawing, keep going.
+                if release || held {
+                    // debug!("Draw line of {:?}", draw_alive);
+                    game_board.set_line(
+                        mouse_prev_cell.0.try_into().unwrap(),
+                        mouse_prev_cell.1.try_into().unwrap(),
+                        mouse_cell.0.try_into().unwrap(),
+                        mouse_cell.1.try_into().unwrap(),
+                        draw_alive,
+                    );
+                }
+                // If they let go or are otherwise not clicking anymore, stop drawing.
+                if release || !held {
+                    // debug!("Draw end");
+                    game_board.draw(pixels.get_frame());
+                    draw_state = None;
+                }
+
+                
+            }
+            
         }
 
         
