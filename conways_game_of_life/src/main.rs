@@ -391,7 +391,7 @@ fn main() -> Result<(), pixels::Error> {
             if win_input.mouse_pressed(0) {
                 // debug!("Mouse click at {:?}", mouse_cell);
                 // set cell to alive
-                draw_state = Some(game_board.set_cell(true, mouse_cell.0.try_into().unwrap(), mouse_cell.1.try_into().unwrap()));
+                draw_state = Some(game_board.set_cell(true, mouse_cell.1.try_into().unwrap(), mouse_cell.0.try_into().unwrap()));
                 // game_board.evolve();
                 game_board.draw(pixels.get_frame());
                 pixels.render();
