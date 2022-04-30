@@ -393,8 +393,7 @@ fn main() -> Result<(), pixels::Error> {
                 // set cell to alive
                 draw_state = Some(game_board.set_cell(true, mouse_cell.1.try_into().unwrap(), mouse_cell.0.try_into().unwrap()));
                 // game_board.evolve();
-                game_board.draw(pixels.get_frame());
-                pixels.render();
+                
             } else if let Some(draw_alive) = draw_state {
                 let release = win_input.mouse_released(0);
                 let held = win_input.mouse_held(0);
@@ -421,7 +420,8 @@ fn main() -> Result<(), pixels::Error> {
 
                 
             }
-            
+            game_board.draw(pixels.get_frame());
+            pixels.render();
         }
 
         
