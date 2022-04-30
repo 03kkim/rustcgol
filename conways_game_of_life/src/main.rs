@@ -162,9 +162,9 @@ impl GameBoard {
         for i in 0..future.height {
             for j in 0..future.width {
                 if self.board[i][j] == true { // if cell at location is live
-                    future.evolve_live_cell(i, j);
+                    future.evolve_live_cell(self, i, j);
                 } else { // else if dead
-                    future.evolve_dead_cell(i, j);
+                    future.evolve_dead_cell(self, i, j);
                 }
             }
         }
@@ -217,15 +217,15 @@ impl GameBoard {
         n
     }
 
-    fn evolve_live_cell(&mut self, row: usize, col: usize) {
-        let n: usize = self.count_live_neighbors(row, col);
+    fn evolve_live_cell(&mut self, board: &mut GameBoard, row: usize, col: usize) {
+        let n: usize = board.count_live_neighbors(row, col);
         if n < 2 || n > 3 { // if less than 2 or greater than 3 live neighbors
             self.set_cell(false, row, col); // set to dead
         }
     }
 
-    fn evolve_dead_cell(&mut self, row: usize, col: usize) {
-        let n: usize = self.count_live_neighbors(row, col);
+    fn evolve_dead_cell(&mut self, board: &mut GameBoard, row: usize, col: usize) {
+        let n: usize = board.count_live_neighbors(row, col);
         if n == 3 { // if exactly 3 live neighbors
             self.set_cell(true, row, col); // set to live
         }
@@ -390,6 +390,7 @@ fn main() -> Result<(), pixels::Error> {
 
             if win_input.mouse_pressed(0) {
                 // debug!("Mouse click at {:?}", mouse_cell);
+                // set cell to alive
                 draw_state = Some(game_board.set_cell(true, mouse_cell.0.try_into().unwrap(), mouse_cell.1.try_into().unwrap()));
                 // game_board.evolve();
                 game_board.draw(pixels.get_frame());
