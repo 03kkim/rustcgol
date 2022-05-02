@@ -307,7 +307,7 @@ fn main() -> Result<(), pixels::Error> {
                 // use the space key to change the state of paused or not paused
                 paused = !paused;
             }
-            /* if win_input.key_pressed(VirtualKeyCode::E) {
+            if paused && win_input.key_pressed(VirtualKeyCode::E) {
                 game_board.evolve();
                 game_board.draw(pixels.get_frame());
                 let r = pixels.render();
@@ -315,7 +315,7 @@ fn main() -> Result<(), pixels::Error> {
                     Ok(_) => (),
                     Err(error) => panic!("Problem rendering: {:?}", error),
                 };
-            } */
+            }
 
             // Altered from pixels example 
             // win_input was input, game_board was life
@@ -397,7 +397,6 @@ fn main() -> Result<(), pixels::Error> {
 
             window.request_redraw();
         }
-
         
         /*
             we still need:
