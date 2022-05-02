@@ -72,6 +72,14 @@ impl GameBoard {
         }
     }
 
+    pub fn clear(&mut self) {
+        for row in 0..self.height {
+            for col in 0..self.width {
+                self.board[row][col] = false;
+            }
+        }
+    }
+
     // a print function for the game board
     pub fn print(&self) {
         println!("---Current Game Board---");
@@ -309,6 +317,15 @@ fn main() -> Result<(), pixels::Error> {
             }
             if paused && win_input.key_pressed(VirtualKeyCode::E) {
                 game_board.evolve();
+                game_board.draw(pixels.get_frame());
+                let r = pixels.render();
+                match r {
+                    Ok(_) => (),
+                    Err(error) => panic!("Problem rendering: {:?}", error),
+                };
+            }
+            if win_input.key_pressed(VirtualKeyCode::C) {
+                game_board.clear();
                 game_board.draw(pixels.get_frame());
                 let r = pixels.render();
                 match r {
