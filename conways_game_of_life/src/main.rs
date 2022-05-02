@@ -7,59 +7,6 @@ use winit::{
 use winit_input_helper::WinitInputHelper;
 use std::{thread, time};
 
-/*use pixels::{Error, Pixels, SurfaceTexture};
-
-const WIDTH: usize = 10;
-const HEIGHT: usize = 10;
-
-
-fn main() {
-    let event_loop = EventLoop::new();
-    let mut input = WinitInputHelper::new();
-    let window = WindowBuilder::new()
-                .with_title("KAL Seagull")
-                .build(&event_loop).unwrap();
-
-    let mut pixels = {
-        let window_size = window.inner_size();
-        let surface_texture = SurfaceTexture::new(window_size.width, window_size.height, &window);
-        Pixels::new(WIDTH as u32, HEIGHT as u32, surface_texture)
-    };
-    
-    let mut life = GameBoard::new(HEIGHT, WIDTH);
-    // life.print(); // display empty board
-    life.set_cell(true, 5, 5);
-    life.set_cell(true, 6, 5);
-    life.set_cell(true, 6, 6);
-    life.set_cell(true, 7, 7);
-    life.set_cell(true, 8, 8);
-    life.print(); // display starting board
-
-    // // let it evolve a bit
-    // life.evolve(); // 1
-    // life.print();
-    // life.evolve(); // 2
-    // life.print();
-    // life.evolve(); // 3
-    // life.print(); // (same as 2 because it is a stagnant square pattern)
-
-
-    event_loop.run(move |event, _, control_flow| {
-        *control_flow = ControlFlow::Wait;
-
-
-        match event {
-            Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
-                window_id,
-            } if window_id == window.id() => *control_flow = ControlFlow::Exit,
-            _ => (),
-        }
-    });
-} 
-
-use winit_input_helper::WinitInputHelper;*/
-
 use pixels::{
     // Error, // removed Error because it was unused and caused warning
     Pixels, 
@@ -318,14 +265,14 @@ fn main() -> Result<(), pixels::Error> {
     pixels.set_clear_color(Color::WHITE);
 
     let mut game_board = GameBoard::new(PIX_HEIGHT as usize, PIX_WIDTH as usize);
-    game_board.set_cell(true, 10, 10);
+    /* game_board.set_cell(true, 10, 10);
     game_board.set_cell(true, 10, 11);
     game_board.set_cell(true, 10, 12);
     game_board.set_cell(true, 10, 13);
     game_board.set_cell(true, 10, 10);
     game_board.set_cell(true, 11, 11);
     game_board.set_cell(true, 12, 12);
-    game_board.set_cell(true, 13, 13);
+    game_board.set_cell(true, 13, 13); */
 
     let mut paused = false;
     let mut draw_state: Option<bool> = None;
@@ -340,7 +287,11 @@ fn main() -> Result<(), pixels::Error> {
             } if window_id == window.id() => *control_flow = ControlFlow::Exit,
             Event::RedrawRequested(_) => {
                 game_board.draw(pixels.get_frame());
-                pixels.render();
+                let r = pixels.render();
+                match r {
+                    Ok(_) => (),
+                    Err(error) => panic!("Problem rendering: {:?}", error),
+                };
             },
             _ => (),
         }
@@ -356,11 +307,15 @@ fn main() -> Result<(), pixels::Error> {
                 // use the space key to change the state of paused or not paused
                 paused = !paused;
             }
-            if win_input.key_pressed(VirtualKeyCode::E) {
+            /* if win_input.key_pressed(VirtualKeyCode::E) {
                 game_board.evolve();
                 game_board.draw(pixels.get_frame());
-                pixels.render();
-            }
+                let r = pixels.render();
+                match r {
+                    Ok(_) => (),
+                    Err(error) => panic!("Problem rendering: {:?}", error),
+                };
+            } */
 
             // Altered from pixels example 
             // win_input was input, game_board was life
@@ -424,16 +379,29 @@ fn main() -> Result<(), pixels::Error> {
                 
             }
             game_board.draw(pixels.get_frame());
-            pixels.render();
+            let r = pixels.render();
+            match r {
+                Ok(_) => (),
+                Err(error) => panic!("Problem rendering: {:?}", error),
+            };
+
+            if !paused {
+                game_board.evolve();
+                game_board.draw(pixels.get_frame());
+                let r = pixels.render();
+                match r {
+                    Ok(_) => (),
+                    Err(error) => panic!("Problem rendering: {:?}", error),
+                };
+            }
+
+            window.request_redraw();
         }
 
         
         /*
             we still need:
-            allow user to add evolution seed in the window with mouse
             dealing with different states: paused & not paused
-                - if not paused, don't detect mouse clicks
-                - if it is paused, allow player to add seeds
             - make the board evolve itself regularly
             - make sure between each evolution there is a period of stopping at that state
                 - so that player can see the current state 
