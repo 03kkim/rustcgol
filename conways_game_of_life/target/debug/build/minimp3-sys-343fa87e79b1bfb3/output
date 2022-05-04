@@ -1,0 +1,26 @@
+TARGET = Some("aarch64-apple-darwin")
+OPT_LEVEL = Some("0")
+HOST = Some("aarch64-apple-darwin")
+CC_aarch64-apple-darwin = None
+CC_aarch64_apple_darwin = None
+HOST_CC = None
+CC = None
+CFLAGS_aarch64-apple-darwin = None
+CFLAGS_aarch64_apple_darwin = None
+HOST_CFLAGS = None
+CFLAGS = None
+CRATE_CC_NO_DEFAULTS = None
+DEBUG = Some("true")
+CARGO_CFG_TARGET_FEATURE = None
+running: "cc" "-O0" "-ffunction-sections" "-fdata-sections" "-fPIC" "-g" "-fno-omit-frame-pointer" "-arch" "arm64" "-I" "minimp3/" "-Wall" "-Wextra" "-DMINIMP3_IMPLEMENTATION" "-o" "/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/minimp3-sys-343fa87e79b1bfb3/out/minimp3.o" "-c" "minimp3.c"
+exit status: 0
+AR_aarch64-apple-darwin = None
+AR_aarch64_apple_darwin = None
+HOST_AR = None
+AR = None
+running: "ar" "cq" "/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/minimp3-sys-343fa87e79b1bfb3/out/libminimp3.a" "/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/minimp3-sys-343fa87e79b1bfb3/out/minimp3.o"
+exit status: 0
+running: "ar" "s" "/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/minimp3-sys-343fa87e79b1bfb3/out/libminimp3.a"
+exit status: 0
+cargo:rustc-link-lib=static=minimp3
+cargo:rustc-link-search=native=/Users/lily/CS Coursework/CS 128/rustseagull/conways_game_of_life/target/debug/build/minimp3-sys-343fa87e79b1bfb3/out

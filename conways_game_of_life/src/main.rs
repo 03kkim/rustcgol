@@ -14,6 +14,11 @@ use pixels::{
     wgpu::Color,
 };
 
+use std::time::Duration;
+use rodio::{OutputStream, Source, Sink};
+
+mod oscillator;
+
 #[derive(Debug, Default, Clone, PartialEq)]
 pub struct Cell {
     pub alive: bool,
@@ -34,8 +39,12 @@ const WIN_WIDTH: f64 = 900.0;
 const WIN_HEIGHT: f64 = 600.0;
 const PIX_WIDTH: u32 = 150;
 const PIX_HEIGHT: u32 = 100;
+const VOLUME_RANGE: f32 = 100.0;
+const FREQUENCY_RANGE: f32 = 15000.0;
+const NOTE_NUM: usize = 12;
+// the game board is divided into 12 sections in a row
 
-// Do we want to wrap the return values with Enums? (for "safe Rust")
+// Do we want to wrap the return values with Enums?
 impl GameBoard {
 
     pub fn new(height: usize, width: usize) -> GameBoard {
@@ -106,6 +115,33 @@ impl GameBoard {
         self.board[row][col] = alive;
 
         alive
+    }
+
+    pub fn get_sound_data(&self) -> (f32, usize) {
+        // let mut sound_data: f32 = 0;
+        let SCALE_HERTZ: Vec<f32> = vec![261.63, 277.18, 293.66, 311.13, 329.63, 349.23, 
+            369.99, 392.00, 415.30, 440.00, 466.16, 493.88];
+        let section_width: usize = PIX_WIDTH as usize / NOTE_NUM;
+        let pixel_per_section: usize = section_width * PIX_HEIGHT as usize;
+        let mut max_alive_count: usize = 0;
+        let mut max_section_num: usize = 0;
+
+        for sec in 0..NOTE_NUM { 
+            let mut total_alive: usize = 0;
+            for col in sec * section_width..(sec + 1) * section_width {
+                for row in 0..self.height {
+                    if self.board[row][col] {
+                        total_alive += 1;
+                    }
+                }
+            }
+            if max_alive_count < total_alive {
+                max_alive_count = total_alive;
+                max_section_num = sec;
+            }
+        }
+
+        return (SCALE_HERTZ[max_section_num], max_section_num);
     }
 
     // evolves the elements of the board
@@ -236,6 +272,13 @@ impl GameBoard {
 }
 
 fn main() -> Result<(), pixels::Error> {
+
+    println!("Starting the game...");
+    
+    /*
+
+    test codes
+    
     let mut b_test = GameBoard::new(10,20);
     b_test.print(); // display empty board
     b_test.set_cell(true, 5, 5);
@@ -244,15 +287,18 @@ fn main() -> Result<(), pixels::Error> {
     b_test.set_cell(true, 7, 7);
     b_test.set_cell(true, 8, 8);
     b_test.print(); // display starting board
-
     // let it evolve a bit
     b_test.evolve(); // 1
     b_test.print();
+    
     b_test.evolve(); // 2
     b_test.print();
+    
     b_test.evolve(); // 3
     b_test.print(); // (same as 2 because it is a stagnant square pattern)
-    
+
+    */
+
     let event_loop = EventLoop::new();
     let mut win_input = WinitInputHelper::new();
     let window = WindowBuilder::new()
@@ -273,17 +319,14 @@ fn main() -> Result<(), pixels::Error> {
     pixels.set_clear_color(Color::WHITE);
 
     let mut game_board = GameBoard::new(PIX_HEIGHT as usize, PIX_WIDTH as usize);
-    /* game_board.set_cell(true, 10, 10);
-    game_board.set_cell(true, 10, 11);
-    game_board.set_cell(true, 10, 12);
-    game_board.set_cell(true, 10, 13);
-    game_board.set_cell(true, 10, 10);
-    game_board.set_cell(true, 11, 11);
-    game_board.set_cell(true, 12, 12);
-    game_board.set_cell(true, 13, 13); */
 
     let mut paused = false;
     let mut draw_state: Option<bool> = None;
+
+    let NOTE_NAMES: Vec<String> = vec!["C".to_string(), "C#".to_string(), "D".to_string(), 
+        "D#".to_string(), "E".to_string(), "E#".to_string(), 
+        "F".to_string(), "G".to_string(), "G#".to_string(), 
+        "A".to_string(), "A#".to_string(), "B".to_string()];
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -332,6 +375,26 @@ fn main() -> Result<(), pixels::Error> {
                     Ok(_) => (),
                     Err(error) => panic!("Problem rendering: {:?}", error),
                 };
+            }
+
+            /* 
+                playing sound
+                the game board is divided into 12 sections (accords to 12 pitches in an octave)
+                count the number of alive cells in each section
+                play the pitch corresponding to the section that has the most alive cells
+                if there are two sections that have the same amount of alive cells, 
+                the leftmost section would be favored.
+            */
+
+            if win_input.key_pressed(VirtualKeyCode::P) {
+                let (freq, note_index) = game_board.get_sound_data();
+                println!("Note played: {:?}", NOTE_NAMES[note_index]);
+                println!("Frequency: {:?}", freq);
+                let mut sine_oscillator = oscillator::WavetableOscillator::init_sine_oscillator();
+                sine_oscillator.set_frequency(freq);
+                let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+                let _result = stream_handle.play_raw(sine_oscillator.convert_samples());
+                std::thread::sleep(Duration::from_secs(1));
             }
 
             // Altered from pixels example 
@@ -415,12 +478,5 @@ fn main() -> Result<(), pixels::Error> {
             window.request_redraw();
         }
         
-        /*
-            we still need:
-            dealing with different states: paused & not paused
-            - make the board evolve itself regularly
-            - make sure between each evolution there is a period of stopping at that state
-                - so that player can see the current state 
-        */
     });
 }
