@@ -1,6 +1,6 @@
 /* 
 
-code credit: WoldSound(Youtube)
+code credit: WolfSound(Youtube)
 
 "Wavetable Synthesis in Rust?? Rust Basics Tutorial [Synth #004]"
 https://www.youtube.com/watch?v=v0Qp7eWVyes
