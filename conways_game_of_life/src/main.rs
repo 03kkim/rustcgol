@@ -320,7 +320,7 @@ fn main() -> Result<(), pixels::Error> {
 
     let mut game_board = GameBoard::new(PIX_HEIGHT as usize, PIX_WIDTH as usize);
 
-    let mut paused = false;
+    let mut paused = true;
     let mut draw_state: Option<bool> = None;
 
     let NOTE_NAMES: Vec<String> = vec!["C".to_string(), "C#".to_string(), "D".to_string(), 
